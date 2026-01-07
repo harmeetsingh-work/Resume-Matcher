@@ -4,11 +4,8 @@ import json
 from typing import Any
 
 from app.llm import complete_json
-from app.prompts import (
-    EXTRACT_KEYWORDS_PROMPT,
-    IMPROVE_RESUME_PROMPT,
-    get_language_name,
-)
+from app.prompt_registry import get_prompt
+from app.prompts import get_language_name
 from app.prompts.templates import RESUME_SCHEMA
 from app.schemas import ResumeData
 
@@ -22,7 +19,7 @@ async def extract_job_keywords(job_description: str) -> dict[str, Any]:
     Returns:
         Structured keywords and requirements
     """
-    prompt = EXTRACT_KEYWORDS_PROMPT.format(job_description=job_description)
+    prompt = get_prompt("extract_keywords").format(job_description=job_description)
 
     return await complete_json(
         prompt=prompt,
@@ -50,7 +47,7 @@ async def improve_resume(
     keywords_str = json.dumps(job_keywords, indent=2)
     output_language = get_language_name(language)
 
-    prompt = IMPROVE_RESUME_PROMPT.format(
+    prompt = get_prompt("improve_resume").format(
         job_description=job_description,
         job_keywords=keywords_str,
         original_resume=original_resume,
@@ -83,24 +80,30 @@ def generate_improvements(job_keywords: dict[str, Any]) -> list[dict[str, Any]]:
     # Generate suggestions based on required skills
     required_skills = job_keywords.get("required_skills", [])
     for skill in required_skills[:3]:  # Top 3 required skills
-        improvements.append({
-            "suggestion": f"Emphasized '{skill}' to match job requirements",
-            "lineNumber": None,
-        })
+        improvements.append(
+            {
+                "suggestion": f"Emphasized '{skill}' to match job requirements",
+                "lineNumber": None,
+            }
+        )
 
     # Generate suggestions based on key responsibilities
     responsibilities = job_keywords.get("key_responsibilities", [])
     for resp in responsibilities[:2]:  # Top 2 responsibilities
-        improvements.append({
-            "suggestion": f"Aligned experience with: {resp}",
-            "lineNumber": None,
-        })
+        improvements.append(
+            {
+                "suggestion": f"Aligned experience with: {resp}",
+                "lineNumber": None,
+            }
+        )
 
     # Default improvement if none generated
     if not improvements:
-        improvements.append({
-            "suggestion": "Resume content optimized for better keyword alignment with job description",
-            "lineNumber": None,
-        })
+        improvements.append(
+            {
+                "suggestion": "Resume content optimized for better keyword alignment with job description",
+                "lineNumber": None,
+            }
+        )
 
     return improvements

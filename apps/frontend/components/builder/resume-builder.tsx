@@ -581,7 +581,7 @@ const ResumeBuilderContent = () => {
               {activeTab === 'resume' && (
                 <>
                   <FormattingControls settings={templateSettings} onChange={handleSettingsChange} />
-                  <ResumeForm resumeData={resumeData} onUpdate={handleUpdate} />
+                  <ResumeForm resumeData={resumeData} onUpdate={handleUpdate} resumeId={resumeId} />
                 </>
               )}
 

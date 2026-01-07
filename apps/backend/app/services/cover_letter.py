@@ -4,7 +4,7 @@ import json
 from typing import Any
 
 from app.llm import complete
-from app.prompts.templates import COVER_LETTER_PROMPT, OUTREACH_MESSAGE_PROMPT
+from app.prompt_registry import get_prompt
 from app.prompts import get_language_name
 
 
@@ -25,7 +25,7 @@ async def generate_cover_letter(
     """
     output_language = get_language_name(language)
 
-    prompt = COVER_LETTER_PROMPT.format(
+    prompt = get_prompt("cover_letter").format(
         job_description=job_description,
         resume_data=json.dumps(resume_data, indent=2),
         output_language=output_language,
@@ -57,7 +57,7 @@ async def generate_outreach_message(
     """
     output_language = get_language_name(language)
 
-    prompt = OUTREACH_MESSAGE_PROMPT.format(
+    prompt = get_prompt("outreach_message").format(
         job_description=job_description,
         resume_data=json.dumps(resume_data, indent=2),
         output_language=output_language,

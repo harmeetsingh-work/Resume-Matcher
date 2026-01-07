@@ -1,6 +1,6 @@
 # LLM Integration Guide
 
-> **Multi-provider AI support, JSON handling, and prompt guidelines.**
+> **Multi-provider AI support, JSON handling, prompt customization, and section regeneration.**
 
 ## Multi-Provider Support
 
@@ -117,6 +117,105 @@ All LLM calls have configurable timeouts:
 | File | Purpose |
 |------|---------|
 | `apps/backend/app/llm.py` | LiteLLM wrapper with JSON mode |
-| `apps/backend/app/prompts/templates.py` | Prompt templates |
+| `apps/backend/app/prompt_registry.py` | Custom prompt management |
+| `apps/backend/app/prompts/templates.py` | Default prompt templates |
 | `apps/backend/app/prompts/enrichment.py` | Enrichment-specific prompts |
+| `apps/backend/app/prompts/sections.py` | Section regeneration prompts |
+| `apps/backend/app/services/section_regenerator.py` | Section regeneration service |
 | `apps/backend/app/config.py` | Provider configuration |
+
+## Custom Prompts
+
+Users can customize all AI prompts via Settings → AI Prompts (`/settings/prompts`).
+
+### How It Works
+
+1. All prompts are registered in `PROMPT_REGISTRY` in `prompt_registry.py`
+2. Services use `get_prompt("prompt_id")` to retrieve the active prompt
+3. If user has customized the prompt, custom version is returned
+4. Otherwise, default prompt is used
+
+### Prompt Features
+
+- **View & Edit**: Collapsible editors for each prompt
+- **Token Count**: Approximate token count displayed
+- **Enable/Disable**: Toggle to prevent prompt from being used
+- **Custom Names**: Rename prompts for clarity
+- **Reset**: Reset individual or all prompts to defaults
+
+### Storage
+
+Custom prompts are stored in `apps/backend/data/prompts.json`:
+
+```json
+{
+  "parse_resume": {
+    "custom_content": "...",
+    "custom_name": "My Parser",
+    "enabled": true
+  }
+}
+```
+
+### Using Prompts in Services
+
+```python
+from app.prompt_registry import get_prompt
+
+# Get prompt (returns custom if set, else default)
+prompt = get_prompt("parse_resume")
+
+# Format with variables
+formatted = prompt.format(resume_text=text, schema=schema)
+```
+
+## Section Regeneration
+
+Regenerate resume sections (Summary, Experience, Projects, Skills) with optional context.
+
+### Supported Sections
+
+| Section | Prompt ID | Notes |
+|---------|-----------|-------|
+| Summary | `regenerate_summary` | Text content |
+| Experience | `regenerate_experience` | All items or single via `item_index` |
+| Projects | `regenerate_project` | All items or single via `item_index` |
+| Skills | `regenerate_skills` | Technical skills array |
+
+> **Note**: Education is NOT supported (factual data).
+
+### API Endpoint
+
+```
+POST /api/v1/resumes/{resume_id}/regenerate-section
+```
+
+Request:
+
+```json
+{
+  "section_type": "summary",
+  "context": {
+    "job_description": "...",
+    "target_role": "Senior Engineer"
+  }
+}
+```
+
+### Regeneration Service
+
+Located in `apps/backend/app/services/section_regenerator.py`:
+
+```python
+from app.services.section_regenerator import regenerate_summary
+
+new_summary = await regenerate_summary(
+    current_summary="...",
+    context={"target_role": "Senior Engineer"},
+    job_description="..."
+)
+```
+
+---
+
+For complete documentation, see [70-features/custom-prompts.md](70-features/custom-prompts.md).

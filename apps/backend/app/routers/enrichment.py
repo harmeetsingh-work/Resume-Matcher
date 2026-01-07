@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.database import db
 from app.llm import complete_json
-from app.prompts.enrichment import ANALYZE_RESUME_PROMPT, ENHANCE_DESCRIPTION_PROMPT
+from app.prompt_registry import get_prompt
 from app.schemas.enrichment import (
     AnalysisResponse,
     AnswerInput,
@@ -47,7 +47,7 @@ async def analyze_resume(resume_id: str) -> AnalysisResponse:
 
     # Build prompt
     resume_json = json.dumps(processed_data, indent=2)
-    prompt = ANALYZE_RESUME_PROMPT.format(resume_json=resume_json)
+    prompt = get_prompt("analyze_resume").format(resume_json=resume_json)
 
     try:
         # Call LLM
@@ -117,7 +117,7 @@ async def generate_enhancements(request: EnhanceRequest) -> EnhancementPreview:
     # Actually, let's parse the answers differently - the frontend should include item context
     # For now, we'll get the analysis to build the mapping
     resume_json = json.dumps(processed_data, indent=2)
-    analysis_prompt = ANALYZE_RESUME_PROMPT.format(resume_json=resume_json)
+    analysis_prompt = get_prompt("analyze_resume").format(resume_json=resume_json)
 
     try:
         analysis_result = await complete_json(analysis_prompt)
@@ -158,7 +158,9 @@ async def generate_enhancements(request: EnhanceRequest) -> EnhancementPreview:
 
         # Find the original questions to include context
         item_questions = [
-            q for q in analysis_result.get("questions", []) if q.get("item_id") == item_id
+            q
+            for q in analysis_result.get("questions", [])
+            if q.get("item_id") == item_id
         ]
 
         # Format answers with their questions for context
@@ -166,7 +168,11 @@ async def generate_enhancements(request: EnhanceRequest) -> EnhancementPreview:
         for answer in answers:
             # Find matching question
             matching_q = next(
-                (q for q in item_questions if q.get("question_id") == answer.question_id),
+                (
+                    q
+                    for q in item_questions
+                    if q.get("question_id") == answer.question_id
+                ),
                 None,
             )
             if matching_q:
@@ -177,9 +183,13 @@ async def generate_enhancements(request: EnhanceRequest) -> EnhancementPreview:
 
         # Build enhancement prompt
         current_desc = item.get("current_description", [])
-        current_desc_text = "\n".join(f"- {d}" for d in current_desc) if current_desc else "(No description)"
+        current_desc_text = (
+            "\n".join(f"- {d}" for d in current_desc)
+            if current_desc
+            else "(No description)"
+        )
 
-        prompt = ENHANCE_DESCRIPTION_PROMPT.format(
+        prompt = get_prompt("enhance_description").format(
             item_type=item.get("item_type", "experience"),
             title=item.get("title", ""),
             subtitle=item.get("subtitle", ""),
@@ -212,9 +222,7 @@ async def generate_enhancements(request: EnhanceRequest) -> EnhancementPreview:
 
 
 @router.post("/apply/{resume_id}")
-async def apply_enhancements(
-    resume_id: str, request: ApplyEnhancementsRequest
-) -> dict:
+async def apply_enhancements(resume_id: str, request: ApplyEnhancementsRequest) -> dict:
     """Apply enhancements to the master resume.
 
     Updates the resume's Experience and Projects sections with
@@ -239,37 +247,63 @@ async def apply_enhancements(
     for enhancement in request.enhancements:
         item_id = enhancement.item_id
         item_type = enhancement.item_type
-        additional_bullets = enhancement.enhanced_description  # These are NEW bullets to add
+        additional_bullets = (
+            enhancement.enhanced_description
+        )  # These are NEW bullets to add
 
         if item_type == "experience":
             # Parse item_id like "exp_0" to get index
             try:
                 index = int(item_id.split("_")[1])
-                if "workExperience" in updated_data and index < len(updated_data["workExperience"]):
+                if "workExperience" in updated_data and index < len(
+                    updated_data["workExperience"]
+                ):
                     # Get existing description and ADD new bullets
-                    existing_desc = updated_data["workExperience"][index].get("description", [])
+                    existing_desc = updated_data["workExperience"][index].get(
+                        "description", []
+                    )
                     if isinstance(existing_desc, list):
-                        updated_data["workExperience"][index]["description"] = existing_desc + additional_bullets
+                        updated_data["workExperience"][index]["description"] = (
+                            existing_desc + additional_bullets
+                        )
                     else:
                         # Handle edge case where description might be a string
-                        updated_data["workExperience"][index]["description"] = [existing_desc] + additional_bullets if existing_desc else additional_bullets
+                        updated_data["workExperience"][index]["description"] = (
+                            [existing_desc] + additional_bullets
+                            if existing_desc
+                            else additional_bullets
+                        )
             except (ValueError, IndexError) as e:
-                logger.warning(f"Could not apply experience enhancement for {item_id}: {e}")
+                logger.warning(
+                    f"Could not apply experience enhancement for {item_id}: {e}"
+                )
 
         elif item_type == "project":
             # Parse item_id like "proj_0" to get index
             try:
                 index = int(item_id.split("_")[1])
-                if "personalProjects" in updated_data and index < len(updated_data["personalProjects"]):
+                if "personalProjects" in updated_data and index < len(
+                    updated_data["personalProjects"]
+                ):
                     # Get existing description and ADD new bullets
-                    existing_desc = updated_data["personalProjects"][index].get("description", [])
+                    existing_desc = updated_data["personalProjects"][index].get(
+                        "description", []
+                    )
                     if isinstance(existing_desc, list):
-                        updated_data["personalProjects"][index]["description"] = existing_desc + additional_bullets
+                        updated_data["personalProjects"][index]["description"] = (
+                            existing_desc + additional_bullets
+                        )
                     else:
                         # Handle edge case where description might be a string
-                        updated_data["personalProjects"][index]["description"] = [existing_desc] + additional_bullets if existing_desc else additional_bullets
+                        updated_data["personalProjects"][index]["description"] = (
+                            [existing_desc] + additional_bullets
+                            if existing_desc
+                            else additional_bullets
+                        )
             except (ValueError, IndexError) as e:
-                logger.warning(f"Could not apply project enhancement for {item_id}: {e}")
+                logger.warning(
+                    f"Could not apply project enhancement for {item_id}: {e}"
+                )
 
     # Update the resume in database
     updated_content = json.dumps(updated_data, indent=2)

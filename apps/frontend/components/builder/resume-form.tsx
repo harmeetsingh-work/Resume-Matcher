@@ -1,12 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   ResumeData,
   PersonalInfo,
-  Experience,
-  Education,
-  Project,
   AdditionalInfo,
   SectionMeta,
   SectionType,
@@ -23,6 +20,8 @@ import { GenericTextForm } from './forms/generic-text-form';
 import { GenericItemForm } from './forms/generic-item-form';
 import { GenericListForm } from './forms/generic-list-form';
 import { AddSectionButton } from './add-section-dialog';
+import { RegenerateButton } from './regenerate-button';
+import { regenerateSection, RegenerateSectionRequest } from '@/lib/api/regenerate';
 import {
   getSectionMeta,
   getAllSections,
@@ -30,17 +29,113 @@ import {
   DEFAULT_SECTION_META,
 } from '@/lib/utils/section-helpers';
 
+// Sections that support regeneration
+const REGENERATABLE_SECTIONS = ['summary', 'workExperience', 'personalProjects', 'additional'];
+
+// Map section keys to section types for API
+const SECTION_TYPE_MAP: Record<string, 'summary' | 'experience' | 'projects' | 'skills'> = {
+  summary: 'summary',
+  workExperience: 'experience',
+  personalProjects: 'projects',
+  additional: 'skills',
+};
+
 interface ResumeFormProps {
   resumeData: ResumeData;
   onUpdate: (data: ResumeData) => void;
+  resumeId?: string | null;
 }
 
-export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) => {
+export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate, resumeId }) => {
+  // Regeneration state
+  const [regenerating, setRegenerating] = useState<string | null>(null);
+
   // Get section metadata, falling back to defaults
   const allSections = getSectionMeta(resumeData);
   // Use getAllSections for form - shows ALL sections including hidden ones
   // (Hidden sections are editable but marked with visual indicator)
   const sortedAllSections = getAllSections(resumeData);
+
+  // Handle regeneration request
+  const handleRegenerate = useCallback(
+    async (
+      sectionKey: string,
+      context?: {
+        job_description?: string;
+        target_role?: string;
+        target_industry?: string;
+        tone?: string;
+        length?: string;
+      }
+    ): Promise<void> => {
+      if (!resumeId) {
+        throw new Error('Resume must be saved before regenerating sections');
+      }
+
+      const sectionType = SECTION_TYPE_MAP[sectionKey];
+      if (!sectionType) {
+        throw new Error(`Section ${sectionKey} does not support regeneration`);
+      }
+
+      setRegenerating(sectionKey);
+
+      try {
+        // Build context string from additional parameters
+        const contextParts: string[] = [];
+        if (context?.target_role) contextParts.push(`Target role: ${context.target_role}`);
+        if (context?.target_industry)
+          contextParts.push(`Target industry: ${context.target_industry}`);
+        if (context?.tone) contextParts.push(`Tone: ${context.tone}`);
+        if (context?.length) contextParts.push(`Length: ${context.length}`);
+
+        const request: RegenerateSectionRequest = {
+          section_type: sectionType,
+          context: contextParts.length > 0 ? contextParts.join('. ') : undefined,
+          job_description: context?.job_description,
+        };
+
+        const response = await regenerateSection(resumeId, request);
+
+        // Apply the regenerated content to the resume data
+        switch (sectionKey) {
+          case 'summary':
+            if (response.regenerated_content && typeof response.regenerated_content === 'string') {
+              onUpdate({ ...resumeData, summary: response.regenerated_content });
+            }
+            break;
+          case 'workExperience':
+            if (response.regenerated_content && Array.isArray(response.regenerated_content)) {
+              onUpdate({ ...resumeData, workExperience: response.regenerated_content });
+            }
+            break;
+          case 'personalProjects':
+            if (response.regenerated_content && Array.isArray(response.regenerated_content)) {
+              onUpdate({ ...resumeData, personalProjects: response.regenerated_content });
+            }
+            break;
+          case 'additional':
+            if (response.regenerated_content && typeof response.regenerated_content === 'object') {
+              onUpdate({
+                ...resumeData,
+                additional: response.regenerated_content as AdditionalInfo,
+              });
+            }
+            break;
+        }
+      } finally {
+        setRegenerating(null);
+      }
+    },
+    [resumeId, resumeData, onUpdate]
+  );
+
+  // Check if section supports regeneration
+  const canRegenerate = useCallback(
+    (sectionKey: string): boolean => {
+      return REGENERATABLE_SECTIONS.includes(sectionKey) && Boolean(resumeId);
+    },
+    [resumeId]
+  );
 
   // Handle section metadata updates
   const handleSectionMetaUpdate = (sections: SectionMeta[]) => {
@@ -219,6 +314,15 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
       return renderContent();
     }
 
+    // Create regeneration button for supported sections
+    const regenerateButton = canRegenerate(section.key) ? (
+      <RegenerateButton
+        sectionType={SECTION_TYPE_MAP[section.key]}
+        onRegenerate={(context) => handleRegenerate(section.key, context)}
+        disabled={regenerating === section.key}
+      />
+    ) : undefined;
+
     // Other default sections get SectionHeader with visibility/reorder controls
     // The form components provide their own container styling
     return (
@@ -232,6 +336,7 @@ export const ResumeForm: React.FC<ResumeFormProps> = ({ resumeData, onUpdate }) 
         isFirst={isFirst}
         isLast={isLast}
         canDelete={true}
+        extraActions={regenerateButton}
       >
         {renderContent()}
       </SectionHeader>

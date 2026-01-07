@@ -42,6 +42,8 @@ import {
   Globe,
   Trash2,
   AlertTriangle,
+  Code,
+  ChevronRight,
 } from 'lucide-react';
 import { useLanguage } from '@/lib/context/language-context';
 import { useTranslations } from '@/lib/i18n';
@@ -730,6 +732,41 @@ export default function SettingsPage() {
                   disabled={featureConfigLoading}
                 />
               </div>
+            </div>
+          </section>
+
+          {/* AI Prompts Section */}
+          <section className="space-y-6">
+            <div className="flex items-center gap-2 border-b border-black/10 pb-2">
+              <Code className="w-4 h-4" />
+              <h2 className="font-mono text-sm font-bold uppercase tracking-wider">AI Prompts</h2>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">
+                Customize the AI prompts used for resume parsing, enhancement, cover letter
+                generation, and more. Advanced users can modify prompts to change AI behavior.
+              </p>
+
+              <Link
+                href="/settings/prompts"
+                className="flex items-center justify-between p-4 border border-black bg-white hover:bg-gray-50 transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 border border-black flex items-center justify-center bg-gray-100">
+                    <Sparkles className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-mono text-sm font-bold uppercase tracking-wider">
+                      Manage AI Prompts
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      View and customize all AI prompts used in the application
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-black transition-colors" />
+              </Link>
             </div>
           </section>
 

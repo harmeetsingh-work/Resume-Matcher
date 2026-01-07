@@ -14,8 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Plus, FileText, List, ListOrdered } from 'lucide-react';
-import type { SectionType, SectionMeta } from '@/components/dashboard/resume-component';
-import { getSectionTypeLabel } from '@/lib/utils/section-helpers';
+import type { SectionType } from '@/components/dashboard/resume-component';
 
 interface AddSectionDialogProps {
   open: boolean;

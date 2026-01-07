@@ -29,6 +29,8 @@ from app.schemas import (
     UpdateCoverLetterRequest,
     UpdateOutreachMessageRequest,
     normalize_resume_data,
+    RegenerateSectionRequest,
+    RegenerateSectionResponse,
 )
 from app.services.parser import parse_document, parse_resume_to_json
 from app.services.improver import (
@@ -39,6 +41,12 @@ from app.services.improver import (
 from app.services.cover_letter import (
     generate_cover_letter,
     generate_outreach_message,
+)
+from app.services.section_regenerator import (
+    regenerate_summary,
+    regenerate_experience,
+    regenerate_project,
+    regenerate_skills,
 )
 
 
@@ -730,3 +738,139 @@ async def download_cover_letter_pdf(
         "Content-Disposition": f'attachment; filename="cover_letter_{resume_id}.pdf"'
     }
     return Response(content=pdf_bytes, media_type="application/pdf", headers=headers)
+
+
+@router.post(
+    "/{resume_id}/regenerate-section", response_model=RegenerateSectionResponse
+)
+async def regenerate_resume_section(
+    resume_id: str,
+    request: RegenerateSectionRequest,
+) -> RegenerateSectionResponse:
+    """Regenerate a specific section of the resume using AI.
+
+    Supports: summary, experience, projects, skills
+    For experience and projects: if item_index is provided, regenerates only that item.
+    Otherwise, regenerates all items in the section.
+    """
+    # Fetch resume
+    resume = db.get_resume(resume_id)
+    if not resume:
+        raise HTTPException(status_code=404, detail="Resume not found")
+
+    processed_data = resume.get("processed_data", {})
+    if not processed_data:
+        raise HTTPException(
+            status_code=400,
+            detail="Resume has no processed data. Please re-upload the resume.",
+        )
+
+    section_type = request.section_type
+    item_index = request.item_index
+
+    try:
+        if section_type == "summary":
+            original = processed_data.get("summary", "")
+            regenerated = await regenerate_summary(
+                current_summary=original,
+                context=request.context,
+                job_description=request.job_description,
+            )
+
+        elif section_type == "experience":
+            experiences = processed_data.get("workExperience", [])
+
+            if item_index is not None:
+                # Regenerate single item
+                if item_index >= len(experiences):
+                    raise HTTPException(
+                        status_code=400, detail="Invalid experience index"
+                    )
+
+                exp = experiences[item_index]
+                original = exp.get("description", [])
+                regenerated = await regenerate_experience(
+                    title=exp.get("title", ""),
+                    company=exp.get("company", ""),
+                    duration=f"{exp.get('years', '')}",
+                    description=original,
+                    context=request.context,
+                    job_description=request.job_description,
+                )
+            else:
+                # Regenerate all experience items
+                original = experiences
+                regenerated = []
+                for exp in experiences:
+                    new_desc = await regenerate_experience(
+                        title=exp.get("title", ""),
+                        company=exp.get("company", ""),
+                        duration=f"{exp.get('years', '')}",
+                        description=exp.get("description", []),
+                        context=request.context,
+                        job_description=request.job_description,
+                    )
+                    regenerated.append({**exp, "description": new_desc})
+
+        elif section_type == "project" or section_type == "projects":
+            projects = processed_data.get("personalProjects", [])
+
+            if item_index is not None:
+                # Regenerate single project
+                if item_index >= len(projects):
+                    raise HTTPException(status_code=400, detail="Invalid project index")
+
+                proj = projects[item_index]
+                original = proj.get("description", [])
+                technologies = proj.get("technologies", [])
+                regenerated = await regenerate_project(
+                    title=proj.get("name", proj.get("title", "")),
+                    technologies=technologies,
+                    description=original,
+                    context=request.context,
+                    job_description=request.job_description,
+                )
+            else:
+                # Regenerate all projects
+                original = projects
+                regenerated = []
+                for proj in projects:
+                    technologies = proj.get("technologies", [])
+                    new_desc = await regenerate_project(
+                        title=proj.get("name", proj.get("title", "")),
+                        technologies=technologies,
+                        description=proj.get("description", []),
+                        context=request.context,
+                        job_description=request.job_description,
+                    )
+                    regenerated.append({**proj, "description": new_desc})
+
+        elif section_type == "skills":
+            additional = processed_data.get("additional", {})
+            original = additional.get("technicalSkills", [])
+            regenerated = await regenerate_skills(
+                current_skills=original,
+                context=request.context,
+                job_description=request.job_description,
+            )
+
+        else:
+            raise HTTPException(
+                status_code=400, detail=f"Unsupported section type: {section_type}"
+            )
+
+        return RegenerateSectionResponse(
+            section_type=section_type,
+            item_index=item_index,
+            original_content=original,
+            regenerated_content=regenerated,
+            prompt_used=f"regenerate_{section_type}",
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to regenerate section: {e}")
+        raise HTTPException(
+            status_code=500, detail="Failed to regenerate section. Please try again."
+        )

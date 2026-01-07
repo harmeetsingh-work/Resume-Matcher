@@ -23,8 +23,8 @@ export function PreviewStep({ enhancements, onApply, onCancel }: PreviewStepProp
 
       {/* Enhancements list */}
       <div className="flex-1 overflow-y-auto space-y-6 pr-2">
-        {enhancements.map((enhancement, index) => (
-          <EnhancementCard key={enhancement.item_id} enhancement={enhancement} index={index} />
+        {enhancements.map((enhancement) => (
+          <EnhancementCard key={enhancement.item_id} enhancement={enhancement} />
         ))}
       </div>
 
@@ -45,10 +45,9 @@ export function PreviewStep({ enhancements, onApply, onCancel }: PreviewStepProp
 
 interface EnhancementCardProps {
   enhancement: EnhancedDescription;
-  index: number;
 }
 
-function EnhancementCard({ enhancement, index }: EnhancementCardProps) {
+function EnhancementCard({ enhancement }: EnhancementCardProps) {
   return (
     <div className="border-2 border-black bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
       {/* Card header */}

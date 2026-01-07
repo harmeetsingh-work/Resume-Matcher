@@ -426,3 +426,72 @@ class StatusResponse(BaseModel):
     llm_healthy: bool
     has_master_resume: bool
     database_stats: dict[str, Any]
+
+
+# Prompt Management Models
+class PromptResponse(BaseModel):
+    """Full prompt response including content and preferences."""
+
+    id: str
+    name: str  # Current name (custom or default)
+    default_name: str  # Original default name
+    description: str
+    category: str
+    variables: list[str]
+    used_in: list[str]  # Where this prompt is used (e.g., "Tailor Resume")
+    is_custom: bool  # True if content has been modified
+    is_enabled: bool  # True if prompt is active
+    content: str
+    default_content: str
+    token_count: int  # Estimated tokens for current content
+    default_token_count: int  # Estimated tokens for default content
+
+
+class PromptsListResponse(BaseModel):
+    """Response with all prompts."""
+
+    prompts: dict[str, PromptResponse]
+
+
+class PromptUpdateRequest(BaseModel):
+    """Request to update a prompt. All fields optional."""
+
+    content: str | None = None  # New prompt content (empty = reset to default)
+    custom_name: str | None = None  # Custom display name (empty = reset to default)
+    enabled: bool | None = None  # Enable/disable the prompt
+
+
+class PromptResetResponse(BaseModel):
+    """Response after resetting a prompt."""
+
+    prompt: PromptResponse
+    message: str
+
+
+class PromptUsageSummary(BaseModel):
+    """Summary of prompt usage for dashboard display."""
+
+    total_prompts: int
+    enabled_count: int
+    custom_count: int
+    total_tokens_enabled: int
+
+
+# Section Regeneration Models
+class RegenerateSectionRequest(BaseModel):
+    """Request to regenerate a specific resume section."""
+
+    section_type: str  # 'summary', 'experience', 'projects', 'skills'
+    item_index: int | None = None  # For list sections (experience, projects)
+    context: str | None = None  # Additional context/instructions from user
+    job_description: str | None = None  # Optional job description for tailoring
+
+
+class RegenerateSectionResponse(BaseModel):
+    """Response with regenerated section content."""
+
+    section_type: str
+    item_index: int | None
+    original_content: Any
+    regenerated_content: Any
+    prompt_used: str  # Show which prompt was used

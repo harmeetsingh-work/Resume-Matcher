@@ -7,7 +7,7 @@ from typing import Any
 from markitdown import MarkItDown
 
 from app.llm import complete_json
-from app.prompts import PARSE_RESUME_PROMPT
+from app.prompt_registry import get_prompt
 from app.prompts.templates import RESUME_SCHEMA_EXAMPLE
 from app.schemas import ResumeData
 
@@ -46,7 +46,7 @@ async def parse_resume_to_json(markdown_text: str) -> dict[str, Any]:
     Returns:
         Structured resume data matching ResumeData schema
     """
-    prompt = PARSE_RESUME_PROMPT.format(
+    prompt = get_prompt("parse_resume").format(
         schema=RESUME_SCHEMA_EXAMPLE,
         resume_text=markdown_text,
     )

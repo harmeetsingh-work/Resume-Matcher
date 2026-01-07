@@ -58,6 +58,7 @@ This folder contains modular documentation for AI agents (GitHub Copilot, Claude
 | Document | Description |
 |----------|-------------|
 | [70-features/custom-sections.md](70-features/custom-sections.md) | Dynamic resume sections system |
+| [70-features/custom-prompts.md](70-features/custom-prompts.md) | AI prompt customization & section regeneration |
 | [70-features/resume-templates.md](70-features/resume-templates.md) | Template types and formatting controls |
 | [70-features/i18n.md](70-features/i18n.md) | Internationalization overview |
 | [70-features/i18n-preparation.md](70-features/i18n-preparation.md) | Detailed i18n extraction plan |

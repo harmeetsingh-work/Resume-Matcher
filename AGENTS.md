@@ -87,6 +87,7 @@ npm run build
 | Document | Description |
 |----------|-------------|
 | [Custom sections](docs/agent/70-features/custom-sections.md) | Dynamic resume sections |
+| [Custom prompts](docs/agent/70-features/custom-prompts.md) | AI prompt customization & regeneration |
 | [Resume templates](docs/agent/70-features/resume-templates.md) | Template formatting controls |
 | [i18n](docs/agent/70-features/i18n.md) | Internationalization |
 | [Enrichment](docs/agent/70-features/enrichment.md) | AI resume enhancement |
@@ -111,11 +112,12 @@ apps/
 │   │   ├── config.py        # Environment settings
 │   │   ├── database.py      # TinyDB wrapper
 │   │   ├── llm.py           # LiteLLM wrapper
+│   │   ├── prompt_registry.py # Custom prompt management
 │   │   ├── routers/         # API endpoints
 │   │   ├── services/        # Business logic
 │   │   ├── schemas/         # Pydantic models
 │   │   └── prompts/         # LLM prompt templates
-│   └── data/                # Database storage
+│   └── data/                # Database storage (+ prompts.json)
 │
 └── frontend/                # Next.js + React
     ├── app/                 # Pages

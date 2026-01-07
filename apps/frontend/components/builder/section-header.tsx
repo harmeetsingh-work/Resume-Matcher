@@ -18,6 +18,7 @@ interface SectionHeaderProps {
   isLast: boolean;
   canDelete: boolean;
   children?: React.ReactNode;
+  extraActions?: React.ReactNode;
 }
 
 /**
@@ -40,6 +41,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   isLast,
   canDelete,
   children,
+  extraActions,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editedName, setEditedName] = useState(section.displayName);
@@ -149,6 +151,9 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
 
         {/* Section Controls */}
         <div className="flex items-center gap-1">
+          {/* Extra Actions (e.g., Regenerate button) */}
+          {extraActions}
+
           {/* Visibility Toggle */}
           {!isPersonalInfo && (
             <Button
