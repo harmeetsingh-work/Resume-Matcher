@@ -8,6 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useResumePreview } from '@/components/common/resume_previewer_context';
 import { uploadJobDescriptions, improveResume } from '@/lib/api/resume';
 import { useStatusCache } from '@/lib/context/status-cache';
+import { TailorOptions, useTailorOptions } from '@/components/tailor/tailor-options';
 import { Loader2, ArrowLeft, AlertTriangle, Settings } from 'lucide-react';
 
 export default function TailorPage() {
@@ -15,6 +16,10 @@ export default function TailorPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [masterResumeId, setMasterResumeId] = useState<string | null>(null);
+
+  // Tailor options state
+  const { selectedPromptId, setSelectedPromptId, generateSummary, setGenerateSummary } =
+    useTailorOptions();
 
   const router = useRouter();
   const { setImprovedData } = useResumePreview();
@@ -56,8 +61,11 @@ export default function TailorPage() {
       const jobId = await uploadJobDescriptions([jobDescription], masterResumeId);
       incrementJobs(); // Update cached counter
 
-      // 2. Improve Resume
-      const result = await improveResume(masterResumeId, jobId);
+      // 2. Improve Resume with options
+      const result = await improveResume(masterResumeId, jobId, {
+        promptId: selectedPromptId !== 'improve_resume' ? selectedPromptId : undefined,
+        skipSummary: !generateSummary,
+      });
       incrementImprovements(); // Update cached counter
       incrementResumes(); // New tailored resume created
 
@@ -139,6 +147,17 @@ export default function TailorPage() {
             </div>
           </div>
         )}
+
+        {/* Tailoring Options Panel */}
+        <div className="mb-6">
+          <TailorOptions
+            selectedPromptId={selectedPromptId}
+            onPromptChange={setSelectedPromptId}
+            generateSummary={generateSummary}
+            onGenerateSummaryChange={setGenerateSummary}
+            disabled={isLoading}
+          />
+        </div>
 
         <div className="space-y-6">
           <div className="relative">

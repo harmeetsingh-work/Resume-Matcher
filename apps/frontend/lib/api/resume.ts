@@ -75,6 +75,12 @@ export interface ResumeListItem {
   updated_at: string;
 }
 
+/** Options for resume tailoring */
+export interface TailorOptions {
+  promptId?: string; // Custom prompt to use (defaults to improve_resume)
+  skipSummary?: boolean; // Whether to skip summary (clears it entirely)
+}
+
 /** Uploads job descriptions and returns a job_id */
 export async function uploadJobDescriptions(
   descriptions: string[],
@@ -90,12 +96,18 @@ export async function uploadJobDescriptions(
 }
 
 /** Improves the resume and returns the full preview object */
-export async function improveResume(resumeId: string, jobId: string): Promise<ImprovedResult> {
+export async function improveResume(
+  resumeId: string,
+  jobId: string,
+  options?: TailorOptions
+): Promise<ImprovedResult> {
   let response: Response;
   try {
     response = await apiPost('/resumes/improve', {
       resume_id: resumeId,
       job_id: jobId,
+      prompt_id: options?.promptId,
+      skip_summary: options?.skipSummary ?? false,
     });
   } catch (networkError) {
     console.error('Network error during improveResume:', networkError);
@@ -266,4 +278,15 @@ export async function fetchJobDescription(
     throw new Error(`Failed to fetch job description (status ${res.status}): ${text}`);
   }
   return res.json();
+}
+
+/** Enhances resume with keywords from a job description (for JD Match) */
+export async function enhanceWithKeywords(
+  resumeId: string,
+  jobId: string
+): Promise<ImprovedResult> {
+  return improveResume(resumeId, jobId, {
+    promptId: 'keyword_enhance',
+    skipSummary: false,
+  });
 }

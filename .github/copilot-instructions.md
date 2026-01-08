@@ -4,15 +4,15 @@
 
 (Read from Project Root)
 
--   [Documentation](#documentation)
--   [Project Structure & Module Organization](#project-structure--module-organization)
--   [Build, Test, and Development Commands](#build-test-and-development-commands)
--   [Coding Style & Naming Conventions](#coding-style--naming-conventions)
--   [Testing Guidelines](#testing-guidelines)
--   [Commit & Pull Request Guidelines](#commit--pull-request-guidelines)
--   [LLM & AI Workflow Notes](#llm--ai-workflow-notes)
--   [Resume Template Settings](#resume-template-settings)
--   [Content Language Settings](#content-language-settings)
+- [Documentation](#documentation)
+- [Project Structure & Module Organization](#project-structure--module-organization)
+- [Build, Test, and Development Commands](#build-test-and-development-commands)
+- [Coding Style & Naming Conventions](#coding-style--naming-conventions)
+- [Testing Guidelines](#testing-guidelines)
+- [Commit & Pull Request Guidelines](#commit--pull-request-guidelines)
+- [LLM & AI Workflow Notes](#llm--ai-workflow-notes)
+- [Resume Template Settings](#resume-template-settings)
+- [Content Language Settings](#content-language-settings)
 
 ---
 
@@ -47,115 +47,120 @@ All project documentation is located in the `docs/` folder:
 
 A lean FastAPI application with multi-provider AI support. See **[docs/agent/30-architecture/backend-guide.md](docs/agent/30-architecture/backend-guide.md)** for detailed architecture documentation.
 
--   `app/main.py` - FastAPI entry point with CORS and router setup
--   `app/config.py` - Pydantic settings loaded from environment
--   `app/database.py` - TinyDB wrapper for JSON storage
--   `app/llm.py` - LiteLLM wrapper with JSON mode support, retry logic, and robust JSON extraction
--   `app/prompt_registry.py` - Custom prompt management (load, save, enable/disable)
--   `app/routers/` - API endpoints (health, config, resumes, jobs, prompts)
--   `app/services/` - Business logic (parser, improver, section_regenerator)
--   `app/schemas/` - Pydantic models matching frontend contracts
--   `app/prompts/` - LLM prompt templates (templates, enrichment, sections)
+- `app/main.py` - FastAPI entry point with CORS and router setup
+- `app/config.py` - Pydantic settings loaded from environment
+- `app/database.py` - TinyDB wrapper for JSON storage
+- `app/llm.py` - LiteLLM wrapper with JSON mode support, retry logic, and robust JSON extraction
+- `app/prompt_registry.py` - Custom prompt management (load, save, enable/disable)
+- `app/routers/` - API endpoints (health, config, resumes, jobs, prompts)
+- `app/services/` - Business logic (parser, improver, section_regenerator)
+- `app/schemas/` - Pydantic models matching frontend contracts
+- `app/prompts/` - LLM prompt templates (templates, enrichment, sections)
 
 ### Frontend (`apps/frontend/`)
 
 Next.js dashboard with Swiss International Style design. See **[docs/agent/30-architecture/frontend-workflow.md](docs/agent/30-architecture/frontend-workflow.md)** for user flow and **[docs/agent/40-apis/front-end-apis.md](docs/agent/40-apis/front-end-apis.md)** for API contracts.
 
--   `app/` - Next.js routes (dashboard, builder, tailor, resumes, settings, print)
--   `components/` - Reusable UI components (including `ConfirmDialog` with danger/success variants)
--   `lib/` - API clients and utilities (`lib/api/resume.ts` includes CRUD operations)
--   `hooks/` - Custom React hooks
+- `app/` - Next.js routes (dashboard, builder, tailor, resumes, settings, print)
+- `components/` - Reusable UI components (including `ConfirmDialog` with danger/success variants)
+- `lib/` - API clients and utilities (`lib/api/resume.ts` includes CRUD operations)
+- `hooks/` - Custom React hooks
 
 **Key Features:**
 
--   Dashboard auto-refreshes on window focus (handles deletions from other pages)
--   `ConfirmDialog` component supports `danger`, `warning`, `success`, and `default` variants
--   Delete flow includes confirmation before and success message after deletion
+- Dashboard auto-refreshes on window focus (handles deletions from other pages)
+- `ConfirmDialog` component supports `danger`, `warning`, `success`, and `default` variants
+- Delete flow includes confirmation before and success message after deletion
 
 ### Root Tooling
 
--   `package.json` - Workflow coordination and scripts
+- `package.json` - Workflow coordination and scripts
 
 ## Build, Test, and Development Commands
 
--   `npm run install` provisions the frontend and, via `uv`, the backend virtual environment.
--   `npm run dev` launches FastAPI on `:8000` and the UI on `:3000`; use `npm run dev:backend` or `npm run dev:frontend` to focus on a single tier.
--   Production builds: `npm run build` for both stacks, `npm run build:frontend` for UI-only.
--   Quality checks: `npm run lint` for the UI, `npm run format` to apply Prettier.
+- `npm run install` provisions the frontend and, via `uv`, the backend virtual environment.
+- `npm run dev` launches FastAPI on `:8000` and the UI on `:3000`; use `npm run dev:backend` or `npm run dev:frontend` to focus on a single tier.
+- Production builds: `npm run build` for both stacks, `npm run build:frontend` for UI-only.
+- Quality checks: `npm run lint` for the UI, `npm run format` to apply Prettier.
 
 ## Coding Style & Naming Conventions
 
 ### Frontend (TypeScript/React)
 
--   **Design System**: All UI changes MUST follow the **Swiss International Style** in [docs/agent/50-design-and-templates/style-guide.md](docs/agent/50-design-and-templates/style-guide.md).
-    -   Use `font-serif` for headers, `font-mono` for metadata, `font-sans` for body text.
-    -   Color palette: `#F0F0E8` (Canvas), `#000000` (Ink), `#1D4ED8` (Hyper Blue), `#15803D` (Signal Green), `#F97316` (Alert Orange), `#DC2626` (Alert Red), `#4B5563` (Steel Grey).
-    -   Components: `rounded-none` with 1px black borders and hard shadows.
--   Use PascalCase for components, camelCase for helpers.
--   Tailwind utility classes for styling; run Prettier before committing.
--   **Textarea Enter Key**: All textareas in forms should include `onKeyDown` with `e.stopPropagation()` for Enter key to ensure newlines work correctly:
+- **Design System**: All UI changes MUST follow the **Swiss International Style** in [docs/agent/50-design-and-templates/style-guide.md](docs/agent/50-design-and-templates/style-guide.md).
+  - Use `font-serif` for headers, `font-mono` for metadata, `font-sans` for body text.
+  - Color palette: `#F0F0E8` (Canvas), `#000000` (Ink), `#1D4ED8` (Hyper Blue), `#15803D` (Signal Green), `#F97316` (Alert Orange), `#DC2626` (Alert Red), `#4B5563` (Steel Grey).
+  - Components: `rounded-none` with 1px black borders and hard shadows.
+- Use PascalCase for components, camelCase for helpers.
+- Tailwind utility classes for styling; run Prettier before committing.
+- **Textarea Enter Key**: All textareas in forms should include `onKeyDown` with `e.stopPropagation()` for Enter key to ensure newlines work correctly:
+
     ```tsx
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    	if (e.key === 'Enter') e.stopPropagation();
+     if (e.key === 'Enter') e.stopPropagation();
     };
     ```
 
 ### Backend (Python/FastAPI)
 
--   Python 3.11+, 4-space indents, type hints on all functions.
--   Async functions for I/O operations (database, LLM calls).
--   Mirror patterns in `app/services/improver.py` for new services.
--   Pydantic models for all request/response schemas.
--   Prompts go in `app/prompts/templates.py`.
--   **Error Handling**: Log detailed errors server-side, return generic messages to clients:
+- Python 3.11+, 4-space indents, type hints on all functions.
+- Async functions for I/O operations (database, LLM calls).
+- Mirror patterns in `app/services/improver.py` for new services.
+- Pydantic models for all request/response schemas.
+- Prompts go in `app/prompts/templates.py`.
+- **Error Handling**: Log detailed errors server-side, return generic messages to clients:
+
     ```python
     except Exception as e:
         logger.error(f"Operation failed: {e}")
         raise HTTPException(status_code=500, detail="Operation failed. Please try again.")
     ```
--   **Race Conditions**: Use `asyncio.Lock()` for shared resource initialization (see `app/pdf.py` for example).
--   **Mutable Defaults**: Always use `copy.deepcopy()` when assigning mutable default values to avoid shared state bugs.
+
+- **Race Conditions**: Use `asyncio.Lock()` for shared resource initialization (see `app/pdf.py` for example).
+- **Mutable Defaults**: Always use `copy.deepcopy()` when assigning mutable default values to avoid shared state bugs.
 
 ### Environment Files
 
--   Backend: Copy `apps/backend/.env.example` to `.env`
--   Frontend: Copy to `apps/frontend/.env.local`
--   Only templates (`.example`, `.env.local.example`) belong in Git.
+- Backend: Copy `apps/backend/.env.example` to `.env`
+- Frontend: Copy to `apps/frontend/.env.local`
+- Only templates (`.example`, `.env.local.example`) belong in Git.
 
 ## Testing Guidelines
 
--   UI contributions must pass `npm run lint`; add Jest or Playwright suites beneath `apps/frontend/__tests__/` named `*.test.tsx` as functionality expands.
--   Backend tests belong in `apps/backend/tests/` using `test_*.py` naming. Execute them with `uv run python -m pytest` once `pytest` is added, and seed anonymised resume/job fixtures.
+- UI contributions must pass `npm run lint`; add Jest or Playwright suites beneath `apps/frontend/__tests__/` named `*.test.tsx` as functionality expands.
+- Backend tests belong in `apps/backend/tests/` using `test_*.py` naming. Execute them with `uv run python -m pytest` once `pytest` is added, and seed anonymised resume/job fixtures.
 
 ## Commit & Pull Request Guidelines
 
--   History shows concise, sentence-style subjects (e.g., `Add custom funding link to FUNDING.yml`) and GitHub merge commits; keep messages short and, if using prefixes, stick to `type: summary` in the imperative.
--   Reference issues (`Fixes #123`) and call out schema or prompt changes in the PR description so reviewers can smoke-test downstream agents.
--   List local verification commands and attach screenshots for UI or API changes.
+- History shows concise, sentence-style subjects (e.g., `Add custom funding link to FUNDING.yml`) and GitHub merge commits; keep messages short and, if using prefixes, stick to `type: summary` in the imperative.
+- Reference issues (`Fixes #123`) and call out schema or prompt changes in the PR description so reviewers can smoke-test downstream agents.
+- List local verification commands and attach screenshots for UI or API changes.
 
 ## LLM & AI Workflow Notes
 
--   **Multi-Provider Support**: Backend uses LiteLLM to support OpenAI, Anthropic, OpenRouter, Gemini, DeepSeek, and Ollama through a unified API.
--   **API Key Handling**: API keys are passed directly to `litellm.acompletion()` via the `api_key` parameter (not via `os.environ`) to avoid race conditions in async contexts.
--   **JSON Mode**: The `complete_json()` function automatically enables `response_format={"type": "json_object"}` for providers that support it (OpenAI, Anthropic, Gemini, DeepSeek, and major OpenRouter models).
--   **Retry Logic**: JSON completions include 2 automatic retries with progressively lower temperature (0.1 → 0.0) to improve reliability.
--   **JSON Extraction**: Robust bracket-matching algorithm in `_extract_json()` handles malformed responses, markdown code blocks, and edge cases. Includes infinite recursion protection when content starts with `{` but matching fails.
--   **Error Handling Pattern**: LLM functions log detailed errors server-side but return generic messages to clients to avoid exposing internal details. Example:
+- **Multi-Provider Support**: Backend uses LiteLLM to support OpenAI, Anthropic, OpenRouter, Gemini, DeepSeek, and Ollama through a unified API.
+- **API Key Handling**: API keys are passed directly to `litellm.acompletion()` via the `api_key` parameter (not via `os.environ`) to avoid race conditions in async contexts.
+- **JSON Mode**: The `complete_json()` function automatically enables `response_format={"type": "json_object"}` for providers that support it (OpenAI, Anthropic, Gemini, DeepSeek, and major OpenRouter models).
+- **Retry Logic**: JSON completions include 2 automatic retries with progressively lower temperature (0.1 → 0.0) to improve reliability.
+- **JSON Extraction**: Robust bracket-matching algorithm in `_extract_json()` handles malformed responses, markdown code blocks, and edge cases. Includes infinite recursion protection when content starts with `{` but matching fails.
+- **Error Handling Pattern**: LLM functions log detailed errors server-side but return generic messages to clients to avoid exposing internal details. Example:
+
     ```python
     except Exception as e:
         logger.error(f"LLM completion failed: {e}")
         raise ValueError("LLM completion failed. Please check your API configuration.")
     ```
--   **Adding Prompts**: Add new prompt templates to `apps/backend/app/prompts/templates.py`. Keep prompts simple and direct—avoid complex escaping.
--   **Prompt Registry**: All prompts are managed via `app/prompt_registry.py`. Use `get_prompt("prompt_id")` to retrieve prompts in services—this enables user customization.
--   **Prompt Guidelines**:
-    -   Use `{variable}` for substitution (single braces)
-    -   Include example JSON schemas for structured outputs
-    -   Keep instructions concise: "Output ONLY the JSON object, no other text"
-    -   Register new prompts in `PROMPT_REGISTRY` with metadata (name, description, category, variables, used_in)
--   **Provider Configuration**: Users configure their preferred AI provider via the Settings page (`/settings`) or `PUT /api/v1/config/llm-api-key`.
--   **Health Checks**: The `/api/v1/health` endpoint validates LLM connectivity. Note: Docker health checks must use `/api/v1/health` (not `/health`).
--   **Timeouts**: All LLM calls have configurable timeouts (30s for health checks, 120s for completions, 180s for JSON operations).
+
+- **Adding Prompts**: Add new prompt templates to `apps/backend/app/prompts/templates.py`. Keep prompts simple and direct—avoid complex escaping.
+- **Prompt Registry**: All prompts are managed via `app/prompt_registry.py`. Use `get_prompt("prompt_id")` to retrieve prompts in services—this enables user customization.
+- **Prompt Guidelines**:
+  - Use `{variable}` for substitution (single braces)
+  - Include example JSON schemas for structured outputs
+  - Keep instructions concise: "Output ONLY the JSON object, no other text"
+  - Register new prompts in `PROMPT_REGISTRY` with metadata (name, description, category, variables, used_in)
+- **Provider Configuration**: Users configure their preferred AI provider via the Settings page (`/settings`) or `PUT /api/v1/config/llm-api-key`.
+- **Health Checks**: The `/api/v1/health` endpoint validates LLM connectivity. Note: Docker health checks must use `/api/v1/health` (not `/health`).
+- **Timeouts**: All LLM calls have configurable timeouts (30s for health checks, 120s for completions, 180s for JSON operations).
 
 ## Custom Prompts System
 
@@ -172,11 +177,11 @@ Users can customize all AI prompts via Settings → AI Prompts (`/settings/promp
 
 ### Prompt Features
 
--   **View & Edit**: Collapsible editors with syntax highlighting
--   **Token Count**: Approximate token count displayed for each prompt
--   **Enable/Disable**: Toggle to prevent prompt from being used
--   **Custom Names**: Rename prompts for clarity
--   **Reset**: Reset individual or all prompts to defaults
+- **View & Edit**: Collapsible editors with syntax highlighting
+- **Token Count**: Approximate token count displayed for each prompt
+- **Enable/Disable**: Toggle to prevent prompt from being used
+- **Custom Names**: Rename prompts for clarity
+- **Reset**: Reset individual or all prompts to defaults
 
 ### Key Files
 
@@ -193,9 +198,9 @@ Users can customize all AI prompts via Settings → AI Prompts (`/settings/promp
 
 Regenerate resume sections (Summary, Experience, Projects, Skills) with optional context:
 
--   Job description for tailoring
--   Target role/industry
--   Tone preferences (professional, confident, friendly)
+- Job description for tailoring
+- Target role/industry
+- Tone preferences (professional, confident, friendly)
 
 **Endpoint**: `POST /api/v1/resumes/{resume_id}/regenerate-section`
 
@@ -220,15 +225,16 @@ The application supports dynamic resume sections with full customization.
 
 ### Section Features
 
--   **Rename sections**: Change display names (e.g., "Education" → "Academic Background")
--   **Reorder sections**: Up/down buttons to change section order
--   **Hide sections**: Toggle visibility (hidden sections still editable, just not in PDF)
--   **Delete sections**: Remove custom sections entirely
--   **Add custom sections**: Create new sections with any name and type
+- **Rename sections**: Change display names (e.g., "Education" → "Academic Background")
+- **Reorder sections**: Up/down buttons to change section order
+- **Hide sections**: Toggle visibility (hidden sections still editable, just not in PDF)
+- **Delete sections**: Remove custom sections entirely
+- **Add custom sections**: Create new sections with any name and type
 
 ### Section Controls (UI)
 
 Each section (except Personal Info) has these controls in the header:
+
 | Control | Icon | Function |
 |---------|------|----------|
 | Visibility | 👁 Eye / EyeOff | Toggle show/hide in PDF preview |
@@ -239,12 +245,12 @@ Each section (except Personal Info) has these controls in the header:
 
 ### Hidden Section Behavior
 
--   Hidden sections appear in the form with:
-    -   Dashed border and 60% opacity
-    -   "Hidden from PDF" badge (amber)
--   Hidden sections are still editable
--   Only PDF/preview hides them (uses `getSortedSections` which filters by visibility)
--   Form shows all sections (uses `getAllSections`)
+- Hidden sections appear in the form with:
+  - Dashed border and 60% opacity
+  - "Hidden from PDF" badge (amber)
+- Hidden sections are still editable
+- Only PDF/preview hides them (uses `getSortedSections` which filters by visibility)
+- Form shows all sections (uses `getAllSections`)
 
 ### Key Files
 
@@ -261,9 +267,9 @@ Each section (except Personal Info) has these controls in the header:
 
 ```typescript
 interface ResumeData {
-	// ... existing fields (personalInfo, summary, etc.)
-	sectionMeta?: SectionMeta[]; // Section order, names, visibility
-	customSections?: Record<string, CustomSection>; // Custom section data
+ // ... existing fields (personalInfo, summary, etc.)
+ sectionMeta?: SectionMeta[]; // Section order, names, visibility
+ customSections?: Record<string, CustomSection>; // Custom section data
 }
 ```
 
@@ -315,11 +321,11 @@ The application supports multiple resume templates with extensive formatting con
 
 Templates use CSS custom properties for styling:
 
--   `--section-gap`, `--item-gap`, `--line-height` - Spacing
--   `--font-size-base`, `--header-scale`, `--section-header-scale` - Typography
--   `--header-font` - Header font family
--   `--body-font` - Body text font family
--   `--margin-top/bottom/left/right` - Page margins
+- `--section-gap`, `--item-gap`, `--line-height` - Spacing
+- `--font-size-base`, `--header-scale`, `--section-header-scale` - Typography
+- `--header-font` - Header font family
+- `--body-font` - Body text font family
+- `--margin-top/bottom/left/right` - Page margins
     Templates should use the `resume-*` helper classes in `apps/frontend/app/(default)/css/globals.css` to ensure all spacing and typography respond to template settings.
     Formatting controls include an "Effective Output" summary that reflects compact-mode adjustments for spacing/line-height.
 
@@ -347,9 +353,9 @@ Both are configured independently in the Settings page.
 
 ### How It Works
 
--   **UI translations**: Simple JSON import approach, no external dependencies
--   **Content generation**: Backend receives language, passes to LLM prompts via `{output_language}`
--   **Existing content** in database remains in original language
+- **UI translations**: Simple JSON import approach, no external dependencies
+- **Content generation**: Backend receives language, passes to LLM prompts via `{output_language}`
+- **Existing content** in database remains in original language
 
 ### Key Files
 

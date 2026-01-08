@@ -36,6 +36,7 @@ import {
   generateCoverLetter,
   generateOutreachMessage,
   fetchJobDescription,
+  enhanceWithKeywords,
 } from '@/lib/api/resume';
 import { JDComparisonView } from './jd-comparison-view';
 import { type TemplateSettings, DEFAULT_TEMPLATE_SETTINGS } from '@/lib/types/template-settings';
@@ -102,6 +103,8 @@ const ResumeBuilderContent = () => {
 
   // JD comparison state
   const [jobDescription, setJobDescription] = useState<string | null>(null);
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [isEnhancingKeywords, setIsEnhancingKeywords] = useState(false);
 
   // Load template settings from localStorage on mount
   useEffect(() => {
@@ -229,17 +232,20 @@ const ResumeBuilderContent = () => {
           const data = await fetchJobDescription(resumeId);
           if (!cancelled) {
             setJobDescription(data.content);
+            setJobId(data.job_id);
           }
         } catch (err) {
           // JD might not be available for older resumes
           if (!cancelled) {
             console.warn('Could not fetch job description:', err);
             setJobDescription(null);
+            setJobId(null);
           }
         }
       } else {
         // Clear job description when switching to non-tailored resume
         setJobDescription(null);
+        setJobId(null);
       }
     };
 
@@ -427,6 +433,32 @@ const ResumeBuilderContent = () => {
       return;
     }
     doGenerateOutreach();
+  };
+
+  // Keyword enhancement handler for JD Match
+  const handleKeywordEnhance = async () => {
+    if (!resumeId || !jobId) return;
+
+    setIsEnhancingKeywords(true);
+    try {
+      const result = await enhanceWithKeywords(resumeId, jobId);
+      // Update resume data with enhanced version
+      if (result?.data?.resume_preview) {
+        setResumeData(result.data.resume_preview);
+        setLastSavedData(result.data.resume_preview);
+        setHasUnsavedChanges(false);
+        // Navigate to the new resume
+        if (result.data.resume_id && result.data.resume_id !== resumeId) {
+          router.push(`/builder?id=${result.data.resume_id}`);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to enhance keywords:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      alert(`Failed to enhance keywords: ${errorMessage}`);
+    } finally {
+      setIsEnhancingKeywords(false);
+    }
   };
 
   return (
@@ -716,7 +748,12 @@ const ResumeBuilderContent = () => {
 
               {/* JD Match Comparison */}
               {activeTab === 'jd-match' && jobDescription && (
-                <JDComparisonView jobDescription={jobDescription} resumeData={resumeData} />
+                <JDComparisonView
+                  jobDescription={jobDescription}
+                  resumeData={resumeData}
+                  onKeywordEnhance={handleKeywordEnhance}
+                  isEnhancing={isEnhancingKeywords}
+                />
               )}
             </div>
           </div>

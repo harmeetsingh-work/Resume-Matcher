@@ -205,5 +205,36 @@ Guidelines:
 
 Output plain text only. No JSON, no markdown formatting."""
 
+KEYWORD_ENHANCE_PROMPT = """Add relevant keywords to this resume without rewriting it. Output ONLY the JSON object, no other text.
+
+IMPORTANT: Generate ALL text content in {output_language}.
+
+CRITICAL RULES:
+- ONLY add keywords from the job description where they naturally fit
+- DO NOT rewrite sentences or change the structure
+- DO NOT invent new experiences or achievements
+- Preserve the original tone and style
+- Keep descriptions mostly intact, just weave in relevant keywords
+- Add missing technical skills to the skills section if the candidate likely has them
+- DO NOT change dates, company names, or job titles
+
+What to do:
+- Insert relevant keywords/phrases into existing bullet points where natural
+- Add missing skills that align with both the resume and job requirements
+- Slightly adjust phrasing to include important terms (e.g., "built APIs" → "built REST APIs")
+- Keep the summary mostly intact, just add 1-2 key terms if missing
+
+Job Description:
+{job_description}
+
+Keywords to incorporate:
+{job_keywords}
+
+Original Resume:
+{original_resume}
+
+Output in this JSON format:
+{schema}"""
+
 # Alias for backward compatibility
 RESUME_SCHEMA = RESUME_SCHEMA_EXAMPLE

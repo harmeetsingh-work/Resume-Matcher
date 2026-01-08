@@ -11,6 +11,7 @@ from app.prompts.templates import (
     PARSE_RESUME_PROMPT,
     EXTRACT_KEYWORDS_PROMPT,
     IMPROVE_RESUME_PROMPT,
+    KEYWORD_ENHANCE_PROMPT,
     COVER_LETTER_PROMPT,
     OUTREACH_MESSAGE_PROMPT,
 )
@@ -69,6 +70,20 @@ PROMPT_REGISTRY: dict[str, dict[str, Any]] = {
             "output_language",
         ],
         "used_in": ["Tailor Resume"],
+    },
+    "keyword_enhance": {
+        "name": "Keyword Enhancer",
+        "description": "Adds relevant keywords without rewriting — keeps your content intact",
+        "category": "generation",
+        "default": KEYWORD_ENHANCE_PROMPT,
+        "variables": [
+            "job_description",
+            "job_keywords",
+            "original_resume",
+            "schema",
+            "output_language",
+        ],
+        "used_in": ["Tailor Resume", "JD Match"],
     },
     "cover_letter": {
         "name": "Cover Letter Generator",

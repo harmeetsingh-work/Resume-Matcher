@@ -274,6 +274,8 @@ class ImproveResumeRequest(BaseModel):
 
     resume_id: str
     job_id: str
+    prompt_id: str | None = None  # Custom prompt to use (defaults to improve_resume)
+    skip_summary: bool = False  # Whether to skip summary (clears it entirely)
 
 
 class ImprovementSuggestion(BaseModel):

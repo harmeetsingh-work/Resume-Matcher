@@ -32,6 +32,7 @@ async def improve_resume(
     job_description: str,
     job_keywords: dict[str, Any],
     language: str = "en",
+    prompt_id: str | None = None,
 ) -> dict[str, Any]:
     """Improve resume to better match job description.
 
@@ -40,6 +41,7 @@ async def improve_resume(
         job_description: Target job description
         job_keywords: Extracted job keywords
         language: Output language code (en, es, zh, ja)
+        prompt_id: Custom prompt ID to use (defaults to "improve_resume")
 
     Returns:
         Improved resume data matching ResumeData schema
@@ -47,7 +49,9 @@ async def improve_resume(
     keywords_str = json.dumps(job_keywords, indent=2)
     output_language = get_language_name(language)
 
-    prompt = get_prompt("improve_resume").format(
+    # Use custom prompt if provided, otherwise default to improve_resume
+    selected_prompt_id = prompt_id if prompt_id else "improve_resume"
+    prompt = get_prompt(selected_prompt_id).format(
         job_description=job_description,
         job_keywords=keywords_str,
         original_resume=original_resume,

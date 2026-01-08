@@ -5,11 +5,14 @@ import { type ResumeData } from '@/components/dashboard/resume-component';
 import { extractKeywords, calculateMatchStats } from '@/lib/utils/keyword-matcher';
 import { JDDisplay } from './jd-display';
 import { HighlightedResumeView } from './highlighted-resume-view';
-import { CheckCircle, Target } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { CheckCircle, Target, Sparkles, Loader2 } from 'lucide-react';
 
 interface JDComparisonViewProps {
   jobDescription: string;
   resumeData: ResumeData;
+  onKeywordEnhance?: () => Promise<void>;
+  isEnhancing?: boolean;
 }
 
 /**
@@ -17,7 +20,12 @@ interface JDComparisonViewProps {
  * Left: JD (read-only)
  * Right: Resume with matching keywords highlighted
  */
-export function JDComparisonView({ jobDescription, resumeData }: JDComparisonViewProps) {
+export function JDComparisonView({
+  jobDescription,
+  resumeData,
+  onKeywordEnhance,
+  isEnhancing = false,
+}: JDComparisonViewProps) {
   // Extract keywords from JD
   const keywords = useMemo(() => extractKeywords(jobDescription), [jobDescription]);
 
@@ -74,19 +82,38 @@ export function JDComparisonView({ jobDescription, resumeData }: JDComparisonVie
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-mono text-gray-600">Match Rate:</span>
-          <span
-            className={`text-lg font-bold ${
-              stats.matchPercentage >= 50
-                ? 'text-green-600'
-                : stats.matchPercentage >= 30
-                  ? 'text-yellow-600'
-                  : 'text-red-600'
-            }`}
-          >
-            {stats.matchPercentage}%
-          </span>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-mono text-gray-600">Match Rate:</span>
+            <span
+              className={`text-lg font-bold ${
+                stats.matchPercentage >= 50
+                  ? 'text-green-600'
+                  : stats.matchPercentage >= 30
+                    ? 'text-yellow-600'
+                    : 'text-red-600'
+              }`}
+            >
+              {stats.matchPercentage}%
+            </span>
+          </div>
+
+          {/* Enhance Keywords Button */}
+          {onKeywordEnhance && (
+            <Button size="sm" onClick={onKeywordEnhance} disabled={isEnhancing} className="gap-2">
+              {isEnhancing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Enhancing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  Enhance Keywords
+                </>
+              )}
+            </Button>
+          )}
         </div>
       </div>
 

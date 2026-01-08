@@ -263,7 +263,12 @@ async def improve_resume_endpoint(
             job_description=job["content"],
             job_keywords=job_keywords,
             language=language,
+            prompt_id=request.prompt_id,
         )
+
+        # If skip_summary is True, clear the summary entirely
+        if request.skip_summary:
+            improved_data["summary"] = ""
 
         # Convert improved data to JSON string for storage
         improved_text = json.dumps(improved_data, indent=2)
